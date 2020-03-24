@@ -5,7 +5,10 @@ import datetime as dt
 import plotly.graph_objects as go
 import plotly.offline as plt
 from src.data.YahooDataLoader import YahooDataLoader
+from src.data.IngDataScraper import IngDataScraper
 
+
+# download quotes from Yahoo finance
 dl = YahooDataLoader()
 
 data = dl.fetch(
@@ -22,14 +25,9 @@ fig = go.Figure(
 plt.plot(fig)
 
 
+# download stock index components
+ing_scraper = IngDataScraper()
 
+components = ing_scraper.get_components('DE0008469008')
 
-
-
-
-
-
-
-
-
-
+print(list(components.keys()))

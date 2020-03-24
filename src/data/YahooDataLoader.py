@@ -7,6 +7,7 @@ import pandas as pd
 import re
 import requests
 
+
 class YahooDataLoader:
     """Data loader for finance.yahoo.com"""
     separator = ','
