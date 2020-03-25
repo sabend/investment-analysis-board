@@ -29,7 +29,7 @@ plt.plot(fig)
 ing_scraper = IngDataScraper()
 
 components = ing_scraper.get_components('DE0008469008')
-print(list(components.keys()))
+print(*list(components.keys()), sep='\n')
 
 
 # download key financials
