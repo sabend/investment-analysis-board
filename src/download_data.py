@@ -29,5 +29,10 @@ plt.plot(fig)
 ing_scraper = IngDataScraper()
 
 components = ing_scraper.get_components('DE0008469008')
-
 print(list(components.keys()))
+
+
+# download key financials
+pnl, balance = ing_scraper.get_financials_for_stock('DE000A1EWWW0')
+print(pnl)
+print(balance)
