@@ -105,6 +105,3 @@ class IngDataScraper:
         )
 
         return pnl, balance
-
-    def get_financials_for_index(self, isin):
-        pass
