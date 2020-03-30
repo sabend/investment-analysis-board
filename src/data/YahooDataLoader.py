@@ -10,13 +10,17 @@ import requests
 
 class YahooDataLoader:
     """Data loader for finance.yahoo.com"""
-    separator = ','
-    url_data = 'https://finance.yahoo.com/quote/{ticker}/history'
-    url_data_download = 'https://query1.finance.yahoo.com/v7/finance/download/{ticker}?' \
+    __base_url = 'https://finance.yahoo.com/'
+    __url_data = 'https://finance.yahoo.com/quote/{ticker}/history'
+    __url_data_download = 'https://query1.finance.yahoo.com/v7/finance/download/{ticker}?' \
         'period1={start}&period2={end}&interval={freq}&events=history&crumb={crumb}'
 
+    __ticker_class = 'D(ib) Fz(18px)'
+
+    __SEPARATOR = ','
+
     def __get_cookies_and_crumbs(self, ticker):
-        url = self.url_data.format(ticker=ticker)
+        url = self.__url_data.format(ticker=ticker)
 
         with requests.session():
             header = {
@@ -30,8 +34,8 @@ class YahooDataLoader:
             website = requests.get(url, headers=header)
             soup = BeautifulSoup(website.text, 'html.parser')
             crumb = re.findall('"CrumbStore":{"crumb":"(.+?)"}', str(soup))
-
-            return (header, website.cookies, crumb[0])
+            self.cookies = website.cookies  # ToDo: delete
+            return header, website.cookies, crumb[0]
 
     def fetch(self, ticker, start, end, freq):
         def _date_to_seconds(date):
@@ -40,7 +44,7 @@ class YahooDataLoader:
         header, cookies, crumb = self.__get_cookies_and_crumbs(ticker)
 
         with requests.session():
-            url = self.url_data_download.format(
+            url = self.__url_data_download.format(
                 ticker=ticker,
                 start=str(_date_to_seconds(start)),
                 end=str(_date_to_seconds(end)),
@@ -51,6 +55,6 @@ class YahooDataLoader:
 
             data = website.text.split('\n')
 
-        names = data.pop(0).split(self.separator)
+        names = data.pop(0).split(self.__SEPARATOR)
 
-        return pd.DataFrame([row.split(self.separator) for row in data], columns=names)
+        return pd.DataFrame([row.split(self.__SEPARATOR) for row in data], columns=names)

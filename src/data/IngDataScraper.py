@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import pandas as pd
+import re
 
 
 class IngDataScraper:
@@ -19,6 +20,9 @@ class IngDataScraper:
     __contained_shares_class = 'sh-index-contained-shares-list'
     __pnl_class = 'sh-share-income-statement'
     __balance_sheet_class = 'sh-balance-sheet'
+    __facts_class = 'sh-facts-list'
+
+    __facts_key = 'Börsenwert'
 
     __pnl_fields = ['turnover', 'resultOfOperations', 'incomeAfterTax']
     __balance_fields = ['labelCurrentAssets', 'labelCapitalAssets', 'labelEquity', 'labelTotalLiabilities']
@@ -105,3 +109,26 @@ class IngDataScraper:
         )
 
         return pnl, balance
+
+    def get_market_cap(self, isin):
+        self.driver.get(self.__stock_profile_url + isin)
+
+        try:
+            target = EC.presence_of_element_located((By.CLASS_NAME, 'sh-table-cell-value'))
+            WebDriverWait(self.driver, self.max_delay).until(target)
+        except TimeoutException:
+            return None
+
+        soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+        table = soup.find_all('div', {'class': self.__facts_class})
+        table_soup = BeautifulSoup(str(table), 'html.parser')
+        rows = list(set(table_soup.find_all('tr')))
+
+        for fact in rows:
+            if fact.contents[0].text == self.__facts_key:
+                break
+
+        market_cap_str = fact.contents[1].text
+        market_cap = float(market_cap_str.split()[0].replace('.', ''))
+
+        return market_cap * self.__MILLION
